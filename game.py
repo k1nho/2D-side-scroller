@@ -37,7 +37,7 @@ class Player(object):
 	pygame.image.load(os.path.join('images', 'S2.png')), pygame.image.load(os.path.join('images', 'S2.png')), pygame.image.load(os.path.join('images', 'S3.png')),
 	pygame.image.load(os.path.join('images', 'S4.png')), pygame.image.load(os.path.join('images', 'S5.png'))]
 	# 4) collision motion
-	fall = [pygame.image.load(os.path.join('images', '0.png'))]
+	fall = pygame.image.load(os.path.join('images', '0.png'))
 	jumpList = [1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	-1,-1,-1,-1,-1,-1,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4]
 
@@ -133,6 +133,12 @@ class Saw(object):
 		WIN.blit(pygame.transform.scale(self.rotate[self.rotate_count //2], (64,64)), (self.x, self.y))
 		self.rotate_count += 1
 
+	def collision(self,rect):
+		if rect[0] + rect[2] > self.hitbox[0] and rect[0] < self.hitbox[0] + self.hitbox[2]:
+			if rect[1] + rect[3] > self.hitbox[1]:
+				return True
+		return False
+
 
 #inherit from the saw class
 class Spike(Saw):
@@ -142,6 +148,12 @@ class Spike(Saw):
 		self.hitbox = (self.x +10, self.y, 28, 315)
 		pygame.draw.rect(WIN, (255,0,0), self.hitbox, 2)
 		WIN.blit(self.img , (self.x, self.y))
+
+	def collision(self,rect):
+		if rect[0] + rect[2] > self.hitbox[0] and rect[0] < self.hitbox[0] + self.hitbox[2]:
+			if rect[1] + rect[3] > self.hitbox[1]:
+				return True
+		return False
 
 
 def win_redraw(character):
@@ -193,6 +205,8 @@ while run:
 
 	for obstacle in obstacles:
 		obstacle.x -= 1.4
+		if obstacle.collision(character.hitbox):
+			character.collision = True
 		if obstacle.x < obstacle.width *-1:
 			obstacles.pop(obstacles.index(obstacle))
 
