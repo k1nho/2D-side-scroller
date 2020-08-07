@@ -23,6 +23,10 @@ background_y = background.get_width()
 # set clock
 clock = pygame.time.Clock()
 
+speed = 30
+fall_speed = 0
+pause = 0
+
 
 class Player(object):
 
@@ -157,6 +161,8 @@ class Spike(Saw):
 
 
 def win_redraw(character):
+	font = pygame.font.SysFont('monospace', 30)
+	text = font.render('Score' + str(score),1 , (255,255,255))
 	WIN.blit(background, (background_x, 0))
 	WIN.blit(background, (background_y, 0))
 	character.draw_char(WIN)
@@ -165,8 +171,41 @@ def win_redraw(character):
 	for obstacle in obstacles:
 		obstacle.draw_obstacle(WIN)
 
+	WIN.blit(text, (700,10))
 	pygame.display.update()
 
+def endgame():
+	global pause, score, speed, obstacles
+
+	pause =0
+	speed = 30
+	obstacles = []
+	run = True
+	# game loop for endscreen
+	while run:
+		pygame.time.delay(100)
+
+		for event in pygame.event.get():
+
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				run = False
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				run = False
+				character.sliding = False
+				character.collision = False
+				character.jumping = False
+
+		WIN.blit(background, (0,0))
+		font = pygame.font.SysFont('monospace', 80)
+		prev_score = font.render('Best Score:' + str(update_file()), 1 , (255,255,255))
+		cur_score = font.render('Score' +str(score) , 1, (255,255,255))
+
+		WIN.blit(prev_score, (WIDTH/2 - prev_score.get_width()/2, 150))
+		WIN.blit(cur_score, (WIDTH/2 - cur_score.get_width()/2, 150))
+		pygame.display.update()
+
+	score = 0
 
 
 
@@ -186,6 +225,7 @@ while run:
 	# move background image
 	background_x -= 1.4
 	background_y -= 1.4
+	score = speed //5 -6
 
 	# if our background reaches the maximum width, reset the background
 	if background_x < background.get_width() * -1:
@@ -203,10 +243,19 @@ while run:
 		if not(character.sliding):
 			character.sliding = True
 
+	if pause > 0:
+		pause += 1
+	if pause > fall_speed *2:
+		endgame()
+
 	for obstacle in obstacles:
 		obstacle.x -= 1.4
 		if obstacle.collision(character.hitbox):
 			character.collision = True
+			if pause == 0:
+				pause = 1
+				fall_speed = speed
+
 		if obstacle.x < obstacle.width *-1:
 			obstacles.pop(obstacles.index(obstacle))
 
